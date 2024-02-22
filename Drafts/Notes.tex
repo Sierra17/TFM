@@ -1,0 +1,132 @@
+\documentclass[12pt]{article}
+
+\input{preamble}
+\input{environments}
+
+\title{TFM Notes}
+\author{Luis Sierra Muntané}
+\date{2023/2024}
+
+\begin{document}
+
+\tableofcontents
+\newpage
+
+\section{Introduction (November 7th, 14th)}
+
+Meeting Ariadna, lierature review and first discussions about the project's scope. Talks about WFAs, Hankel matrices, Sequence distributions and Matrix completion schemes.
+
+\subsection{WFAs}
+
+\begin{definition}
+    A Weighted Finite Automaton (WFA) is a tuple $\left(Q, \Sigma,\Delta, i, f\right)$ where
+    \begin{itemize}
+        \item $Q$ is a finite set of states.
+        \item $\Sigma$ is a finite set of symbols (alphabet). The set of all finite strings over this alphabet is usually denoted $\Sigma^\star$. Then, $\sigma\in\Sigma^\star$ is an arbitrary string while $\lambda$ will denote the empty string.
+        \item $\Delta: Q\times \Sigma \times \R \rightarrow Q$ is a transition function such that $\Delta(q, \sigma, w) = q'$ and so moves between states.
+        \item $i$ is the initial state, given as a function or a state in $Q$.
+        \item $f$ is the final state, and can again be given as a function or an element of $Q$.
+    \end{itemize}
+\end{definition}
+
+\noindent From these WFAs, we can construct what are known as \emph{Hankel matrices}, with which we aim to encode functions over our strings. In fact, let $f:\Sigma^{\star}\rightarrow \R$ denote a function over our set of finite strings (e.g. the density or probability mass), then the Hankel matrix $\mathbf{H}_f := \mathbf{H}(f)$ is the bi-infinite matrix with real entries such that $\mathbf{H}_f(u,v) = f(uv)$ for any $u,v\in\Sigma^{\star}$, where by $uv$ we mean the concatenation of strings $u$ and $v$. Note then that rows are indexed by prefixes and columns by suffixes.
+
+\begin{obs}
+    A Hankel matrix has many redundancies in terms of information representation, starting from the fact that $f(\mathbf{x}) = \mathbf{H}_f(\mathbf{x},\lambda) = \mathbf{H}_f(\lambda, \mathbf{x})$, but also, if we decompose the string into its characters $\mathbf{x} = x_1x_2\cdots x_n$ then we may say that $f(\mathbf{x}) = \mathbf{H}_f(x_1\cdots x_i,x_{i+1}\cdots x_n)$ for any $i\in\left\{1,\dots,\left|x\right|-1\right\}$, so fact the value $f(\mathbf{x})$ appears in the matrix $\left|x\right| + 1$ times.
+\end{obs}
+
+In practice, we will need to consider finite submatrices of $\mathbf{H}$, for which we can define a \emph{closed sub-basis} $\left(\mathcal{P},\mathcal{S}\right)$
+
+\subsection{Learning WFAs}
+
+The general framework for learning WFAs from Hankel matrices is taken from \cite{ballewfalearning}. There, the authors propose, given a sample $Z = \left(z_1,\dots,z_m\right)$ with samples $z=(x,y)$ where $x\in\mathcal{PS}$ and $y\in\R$ is the observed relative frequency, the regularised procedure to learn the Hankel operator $h$ is that of solving the problem:
+
+\begin{equation*}
+    F_Z(h) = \tau N(h) + \Hat{R}_{\Tilde{Z}}(h) = \tau\lVert h\rVert_{p}^2 + \frac{1}{m}\sum_{(x,y)\in Z}{\ell\left(h(x),y\right)}
+\end{equation*}
+
+\noindent so that when we take $\ell$ to be a convex function, then the optimisation problem will be convex and will produce
+
+\begin{equation*}
+    h_Z = \argmin_{h}{F_Z(h)}    
+\end{equation*}
+
+We will see later that an alternating scheme will make more sense than simply solving this convex optimisation problem.
+
+\subsection{Matrix Completion Basics}
+
+Let $A\in\mathcal{M}\left(m\times n, r\right)$ denote an $m\times n$ matrix with rank at most $r$. This space $\mathcal{M}\left(m\times n, r\right)$ is usually referred to as the \emph{determinantal variety} over a given field, for us mainly $\R$ or $\C$, and satisfies a number of definitional properties.
+
+\begin{prop} The determinantal variety satisfies the following properties
+    \begin{enumerate}
+        \item[$(i)$] $\mathcal{M}\left(m\times n, r\right)$ is the image of the map $\Gamma:U,V\mapsto UV^{\top}$
+        \item[$(ii)$] The variety $\mathcal{M}(m\times n;r)$ has dimension
+        \begin{equation*}
+            d_r(m,n) = \begin{cases}
+                r(m+n-r) , \text{ if } m\ge r \text{ and } n\ge r, \quad \text{(think Grassmanian)}\\
+                mn, \text{ otherwise}.
+            \end{cases}
+        \end{equation*}
+        \item[$(iii)$] Every $(r+1)\times(r+1)$ minor is equal to zero.
+    \end{enumerate}
+\end{prop}
+
+\cite{MekaJainDhillon}
+
+\begin{remark}
+    The norm of a matrix may be defined in a number of different ways. A common general norm is the \emph{schatten $p$-norm}, defined for a matrix $\mathbf{M}$ by 
+    \begin{equation*}
+        \lVert \mathbf{M}\rVert_p = \left(\sum_{i=1}^{r}{\sigma_i(\mathbf{M})^p}\right)^{1/p},
+    \end{equation*}
+    where $\sigma_i(\mathbf{M})$ is its $i$-th largest singular value, so in particular, when $p=2$, this corresponds to the Frobenius norm.
+\end{remark}
+
+To decompose, or factorise a matrix of low rank $A\in\mathcal{M}(m\times n, r;\R)$ into two matrices $U \in \mathcal{M}(m\times r, r;\R)$ and $ V\in \mathcal{M}(n\times r, r;\R)$ where we know in advance, or at least we want to impose the rank of the matrix $A$ as being $r$, we can solve the minimisation problem
+
+\begin{equation}
+    \min_{U\in\R^{m\times r},V\in\R^{n\times r}}{\lVert A-UV^T\rVert_F},
+\end{equation}
+where the rank constraint is already satisfied by the domain of choice for $U,V$, but for a rank $k<r$ solution, an extra constraint would be required. This problem is not convex, but by breaking it down into a sequence of successive convex problems we can design a procedure to recover the decomposition.
+
+\begin{algorithm}
+    \caption{Alternating Minimisation for Matrix Factorisation \label{alternating_optimisation}}
+    \begin{algorithmic}[1]
+        
+        \State Initialise matrix $V$
+        \While{$\quad \lVert A - UV^T \rVert > \varepsilon\:$} :
+            \State $U^{i+1} = \argmin_{U}{\lVert A - UV^T\rVert}$
+            \State $V^{i+1} = \argmin_{V}{\lVert A - UV^T\rVert}$
+            \State $i \leftarrow i + 1$
+        \EndWhile
+    \end{algorithmic}
+\end{algorithm}
+
+\section{November 21st}
+
+\subsection{Hankel Matrix Completion}
+
+For the specific task of Hankel matrix completion, we shall assume a basis $\mathcal{B}= \left(\mathcal{P},\mathcal{S}\right)$ and a sample $Z$
+
+
+\section{February 6th}
+
+\subsection{Matrix Completion as Error Correction}
+
+Consider a restriction sampling operator $(S_T\mathbf{x}):\R^{2^r}\rightarrow \R^T$ such that $(S_T\mathbf{x})(j) = x_j,\:j\in T$ where $T$ is a random subset of indices in $\left\{1,\dots, 2^r\right\}$
+
+For an $m\times n$ matrix $A$ and a target rank $k$, take $r = \lceil \log_2{n} \rceil$ as the dimension of the code and $\ell > k$ as the length of the code, then we can form a sampling matrix as follows:
+
+\begin{equation}
+    \Omega = \sqrt{\frac{2^r}{\ell}}DS\Phi
+\end{equation}
+
+\section{February 20th}
+
+\subsection{Matrix completion on graphs}
+
+
+
+\newpage
+\printbibliography
+
+\end{document}
