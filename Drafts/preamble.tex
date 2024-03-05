@@ -1,0 +1,62 @@
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsthm, amsmath, amssymb, amsfonts, mathtools, mathrsfs}
+\usepackage{bbm}
+\usepackage{dsfont}
+\usepackage{thmtools,thm-restate}
+\usepackage{graphicx, calc}
+\usepackage{minted}
+
+\usepackage[left=2cm,right=2cm,top=2.5cm,bottom=3cm]{geometry}
+\usepackage{tikz}
+\usepackage{tikz-cd}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.15}
+\usepackage[shortlabels]{enumitem}
+\usepackage{empheq}
+\usepackage{comment}
+\usepackage[style=english]{csquotes}
+\usepackage{xspace}
+\usepackage{siunitx}
+\usepackage{fancyhdr}
+\usepackage{caption}
+\usepackage{placeins} % FloatBarrier
+\usepackage{physics}
+\usepackage{ragged2e}
+\usepackage{multicol}
+\usepackage{lipsum}
+\usepackage{accents}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{cancel}
+\renewcommand\labelenumi{(\theenumi)} %round parentheses
+
+\usepackage[sorting=none,style=authoryear]{biblatex}
+\addbibresource{references.bib}
+
+% Links
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks = true,
+    filecolor = magenta,
+    linkcolor = blue
+}
+
+% Colours
+\usepackage{xcolor}
+\definecolor{RawSienna}{HTML}{882D17}
+\definecolor{Salmon}{HTML}{FA8072}
+
+\usetikzlibrary{arrows}
+
+\tikzset{
+  treenode/.style = {align=center, inner sep=0pt, text centered,
+    font=\sffamily},
+  arn_n/.style = {treenode, circle, white, font=\sffamily\bfseries, draw=black,
+    fill=black, text width=1.5em},% arbre rouge noir, noeud noir
+  arn_r/.style = {treenode, circle, black, draw=black, 
+    text width=1.5em, very thick},% arbre rouge noir, noeud rouge
+  arn_x/.style = {treenode, rectangle, draw=black,
+    minimum width=0.5em, minimum height=0.5em},% arbre rouge noir, nil
+  arn_w/.style = {treenode, circle, draw = white, minimum width=0.5em, minimum height=0.5em}% empty node
+}
