@@ -1,3 +1,6 @@
+# Implementation of Alternating Minimization for Low Rank Matrix Completion LRMC
+# based on Hastie et al. (2015)
+
 from os.path import dirname
 
 from random import *
