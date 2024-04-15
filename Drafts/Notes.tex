@@ -125,6 +125,114 @@ For an $m\times n$ matrix $A$ and a target rank $k$, take $r = \lceil \log_2{n} 
 \subsection{Matrix completion on graphs}
 
 
+Most of the input matrices that are to be completed don't come from thin air but are rather often created by a process involving a set of individuals and/or objects that are encoded as the rows and columns of the matrix. These individuals can often present with a graph structure, and such a relationship can help in aiding the completion process. To that effect, consider the following definition.
+
+\begin{definition}[Graph Laplacian]
+    Given a graph $G=(V,E)$ with vertices indexed by $V = \left\{v_i\right\}_i$, its \emph{Laplacian} $L_G = (l_{ij})_{ij}$ is the matrix given by
+    \begin{equation*}
+        l_{ij} = \begin{cases}
+            \deg(v_i), \quad &\text{when }\: i = j, \\
+            -1, \quad &\text{when }\: v_i \sim v_j, \\
+            0, \quad &\text{otherwise.}    
+        \end{cases}
+    \end{equation*}
+    or equivalently, $L = D - A$ or using the incidence matrix, $L = BB^T$. This can be extended to a weighted version when we have a weight function on edges $w: E \rightarrow \R$, and we may define $L = BWB^T$ where $W$ is a diagonal $\left|E\right|\times \left|E\right|$ matrix with the weights in its diagonal.
+    \begin{equation}\label{wlaplacian}
+        l_{ij} = \begin{cases}
+            \deg(v_i), \quad &\text{when }\: i = j, \\
+            -w_{ij}, \quad &\text{when }\: v_i \sim v_j, \\
+            0, \quad &\text{otherwise.}    
+        \end{cases}
+    \end{equation}
+\end{definition}
+
+In the same vein as the classical Laplacian encodes a relationship of "me minus my neighbours" for twice differentiable functions, the same intuition holds for the graph Laplacian.
+
+\begin{prop}[Semi-Positivity of the Laplacian] For any $\left|V\right|$-dimensional vector $x$, we have $x^TLx = \sum_{i\sim j}{\left(x_i - x_j\right)^2}$, or in the weighted case $x^TLx = \sum_{i\sim j}{w_{ij}\left(x_i - x_j\right)^2}$. As such, the Laplacian is a symmetric, positive semi-definite matrix.
+\end{prop}
+
+\begin{prop}[Laplacian Spectrum]
+    The graph Laplacian $L_G$ is diagonalizable (by the Spectral theorem), and denote by $\mu_1 \le \mu_2 \le \dots \le \mu_n$ its spectrum.
+    \begin{enumerate}
+        \item[(i)] $\mu_1 = 0$ with eigenvector $\mathbbm{1}$.
+        \item[(ii)] $\mu_2 = \min_{x\perp \mathbbm{1}}{\frac{x^TLx}{x^Tx}}$.
+        \item[(iii)] $G$ is connected if and only if $\mu_2 > 0$.
+        \item[(iv)] If $G$ is $k$-regular, then $\mu_i = d- \lambda_i$, where $\lambda_i$ is the $i$th eigenvalue of the adjacency matrix (listed in non-increasing order).
+    \end{enumerate}
+\end{prop}
+
+\begin{obs}
+    Note that computing the spectrum of $L_G$ can be done in polynomial time. This is useful because the eigenvalues of the Laplacian can be used to bound quantities whose computational complexity class is NP (for example, the Cheeger constant $i(G)$). 
+\end{obs}
+
+\begin{remark}
+    The spectral gap of the Laplacian is given by $\mu_2$ and its size gives us a proxy for the expanding properties of the graph. Roughly, a larger value of $\mu_2$ gives rise to good expanding properties of the graph.
+\end{remark}
+
+Using the graph Laplacian, we can enhance the completion of our matrix by using (or indeed constructing) a graph from the elements that are encoded by the rows and columns of the matrix. In \cite{kalofolias2014} this use of the graph is then used to modify the matrix completion problem as stated in \eqref{MC} to include regularization involving the Laplacian. In essence, we want our matrix to respect the relationship weights imposed by the Laplacian. If we assume $A$ has $m$-dimensional column vectors $(x_1,\dots, x_n)$, (or equivalently has $n$-dimensional row vectors $\left(x^1,\dots,x^m\right)$) then we would expect $\lVert x_i - x_j \rVert_2$ to be small whenever $(i,j)\in E_c$ and more so if the edge's weight is large. 
+
+\begin{equation*}
+    \sum_{i,j}{w_{ij}\lVert x_i - x_j \rVert^{2}_{2}} = \tr\left(AL_rA^T\right) = \lVert X\rVert^{2}_{\mathcal{D},r}
+\end{equation*}
+and the same for the column graph. Therefore, the objective function with these extra terms becomes
+
+\begin{equation}
+    \min_{U\in\R^{m\times r},V\in\R^{n\times r}}{\lVert \mathcal{P}_{\Omega}\left(A-UV^T\right)\rVert_F + \gamma_r\lVert A \rVert^{2}_{\mathcal{D},r} + \gamma_c\lVert A \rVert^{2}_{\mathcal{D},c}},
+\end{equation}
+
+\subsection{UMAP}
+
+Suppose we desire a map $f:\mathcal{M} \to \R$ that optimally preserves locality, i.e. points close together on the manifold get mapped close together on the real line. Now consider two points $\mathbf{x},\mathbf{z}$ on a  manifold $\mathcal{M}$, and let $l=\text{dist}_{\mathcal{M}}(\mathbf{x},\mathbf{z})$. Let $c(t)$ be the geodesic with respect to $\mathcal{M}$ connecting the two points such that $c(0)=\mathbf{x}$ and $c(l)=\mathbf{z}$. Then we have
+\begin{equation*}
+    f(\mathbf{z}) = f(\mathbf{x}) + \int_{0}^{l}{\left<\nabla f(c(t)), c'(t)\right>dt}
+\end{equation*}
+Now by the Cauchy-Schwartz inequality and using the fact that $||c'(t)||\equiv1$ due to the arc-length parametrisation we have
+\begin{equation*}
+    \left<\nabla f(c(t)), c'(t)\right> \le ||\nabla f(c(t))||
+\end{equation*}
+And so we obtain the following inequality using Taylor's expansion
+\begin{equation*}
+    f(\mathbf{z}) = f(\mathbf{x}) + \text{dist}_{\mathcal{M}}(\mathbf{x},\mathbf{z})||\nabla f(c(t))|| + o(\text{dist}_{\mathcal{M}}(\mathbf{x},\mathbf{z})) = f(\mathbf{x}) + l||\nabla f(c(t))|| + o(l)
+\end{equation*}
+Meaning that asymptotically the distance between the images of two points is proportional to the gradient of the geodesic connecting them in the original manifold, that is, proportional to $||\nabla f(c(t))||$.\par All of this is to get an intuition as of how $||\nabla f||$ is an estimate of how far apart $f$ maps nearby points, and so finding a map that preserves locality of data is like trying to solve the problem of minimising the gradient of the map over the manifold, in other words
+\begin{equation}\label{min}
+    \argmin_{||f||_{L_{2(\mathcal{M})}}=1}{\int_{\mathcal{M}}{||\nabla f||^2}}
+\end{equation}
+will give us the best possible map $f$ to map from the manifold. In our new scenario we are dealing with a graph and so we can equate our two problems so that the previous minimisation of the gradient is equivalent in a discrete formulation to minimising the distances
+\begin{equation*}
+    \frac{1}{2}\sum_{i,j}{(y_i-y_j)^2W_{ij}}
+\end{equation*}
+Where we have included a multiplying factor of one half to make the derivative neater and the expression equal to the product $\mathbf{y}^TL\mathbf{y}$. Therefore, we can adapt to make the notation more harmonious and use our original map over the graph of $\mathbf{y} = (y_1,\dots, y_n)$ as $f$.
+    
+Recall from Stokes' Theorem we have that for $X$ vector field $\int{\left<X,\nabla f\right>} = -\int{\text{div}(X) f}$ and so we can write
+\begin{equation*}
+    \int_\mathcal{M}{||\nabla f||^2} = -\int_\mathcal{M}{\Delta(f)f}
+\end{equation*}
+Therefore, we are searching for $f$ an eigenfunction of the Laplacian $\Delta$ which is a positive semi-definite operator. We can therefore apply the spectral theorem to find the eigendecomposition of $-\Delta$. Let $0 = \lambda_0 \le \lambda_1 \le \dots$ be the eigenvalues of the Laplacian, with $f_i$ the corresponding eigenvector of the eigenvalue $\lambda_i$. Now it is seen that $f_0$ is the constant function, so it maps the entire manifold to a single point. To avoid this eventuality, we require that the embedding map f be orthogonal to $f_0$. It immediately follows that f1 is the optimal embedding map. Using this approach iteratively it is then easy to check that
+\begin{equation*}
+    x \to (f_1(x),..., f_m(x))
+\end{equation*}
+provides the optimal $m$-dimensional embedding.
+
+\section{March 19th}
+
+How can we leverage the transductive setting using the approaches mentioned?
+
+\begin{itemize}
+    \item By imputing the zeros from the ground-truth large matrix into the sample matrix.
+    \item By constructing the semantic similarity graph from the large matrix and then perform matrix completion on the graph.
+\end{itemize}
+
+\subsection{Implementing and testing approach from \cite{kalofolias2014}}
+
+Running the Matlab code on the genetic dataset and our data matrix.
+
+\subsection{Alternating Direction Method of Multipliers (ADMM)}
+
+
+
+
+
 
 \newpage
 \printbibliography
