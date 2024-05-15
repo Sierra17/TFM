@@ -20,7 +20,7 @@ def make_random_lr_matrix (m, n, k):
 def get_masked_matrix (M, omega):
     M_max, M_min = np.max(M), np.min(M)
     M_ = M.copy()
-    M_[(1 - omega).astype(np.int16)] = M_max * M_max # try bools maybe?
+    M_[(1 - omega).astype(np.double)] = M_max * M_max
     return M_
 
 
@@ -73,10 +73,10 @@ def solve (M, omega, p, k, T, mu):
     return np.dot(U, V)
 
 
-def main (m, n, k, p, T, mu):
+def main (m, n, k, p, T, mu, M):
     seed(1234)
     np.random.seed(1234)
-    M = make_random_lr_matrix(m, n, k)
+    #M = make_random_lr_matrix(m, n, k)
     #my_dict = {}
     #scipy.io.loadmat('M', my_dict)
     #print(my_dict.keys)
@@ -113,4 +113,5 @@ if __name__ == '__main__':
     k = 3
     T = 5
     mu = 0.1
-    main(m, n, k, p, T, mu)
+    M = #input matrix from Matlab
+    main(m, n, k, p, T, mu, M)
