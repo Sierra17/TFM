@@ -105,13 +105,13 @@ def main (m, n, k, p, T, mu, M):
 
 
 if __name__ == '__main__':
-    # Given
-    m = 337
-    n = 337
+    # m = 337
+    # n = 337
     p = 0.95
     # Hyper Parameters: constrained rank, iterations, mu for thresholding
     k = 3
     T = 5
     mu = 0.1
-    M = #input matrix from Matlab
+    M = np.genfromtxt('input.csv', delimiter=',')#input matrix from Matlab
+    n, m = np.shape(M)
     main(m, n, k, p, T, mu, M)
