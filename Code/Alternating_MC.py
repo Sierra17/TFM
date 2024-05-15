@@ -20,11 +20,11 @@ def make_random_lr_matrix (m, n, k):
 def get_masked_matrix (M, omega):
     M_max, M_min = np.max(M), np.min(M)
     M_ = M.copy()
-    M_[(1 - omega).astype(np.double)] = M_max * M_max
+    M_[(1 - omega).astype(np.bool_)] = M_max * M_max
     return M_
 
 
-# Solving linear system as single iteration (convex)
+# Solving linear system as a single iteration of least squares
 def get_V_from_U (M, U, omega):
     column = M.shape[1]
     rank = U.shape[1]
@@ -112,6 +112,6 @@ if __name__ == '__main__':
     k = 3
     T = 5
     mu = 0.1
-    M = np.genfromtxt('input.csv', delimiter=',')#input matrix from Matlab
+    M = np.genfromtxt('M.txt', delimiter=',') #input matrix from Matlab as plaintext or csv
     n, m = np.shape(M)
     main(m, n, k, p, T, mu, M)
